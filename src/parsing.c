@@ -23,6 +23,9 @@ t_config parse_args(int ac, char **av)
 	config.target = NULL;
 	config.n = 0;
 	config.w = 0;
+	config.s = 56;
+	config.W = 0;
+	config.v = 0;
 
 	for (int i = 1; i < ac; i++)
 	{

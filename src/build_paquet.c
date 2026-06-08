@@ -22,23 +22,35 @@ uint16_t   icmp_checksum(void *data, int len)
 
 int build_icmp_paquet(char *buff, int seq, int pid, struct icmphdr *icmp)
 {
-    int paquet_size = sizeof(struct icmphdr) + PAYLOAD_SIZE;
     struct icmphdr *hdr = (struct icmphdr *)buff;
 
-    memset(buff, 0, paquet_size);
-
+    // 1. Forge de l'en-tête (8 octets)
     hdr->type = ICMP_ECHO;
     hdr->code = 0;
     hdr->un.echo.id = htons(pid);
     hdr->un.echo.sequence = htons(seq);
     hdr->checksum = 0;
 
-    char *payload = buff + sizeof(struct icmphdr);
-    for (int i = 0; i < PAYLOAD_SIZE; i++)
-        payload[i] = (char)i;
+    // 2. Injection du Timestamp au début du payload (octets 8 à 24)
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    // On copie la structure tv juste après l'en-tête ICMP dans le buffer
+    memcpy(buff + sizeof(struct icmphdr), &tv, sizeof(struct timeval));
 
-    hdr->checksum = icmp_checksum(buff, paquet_size);
-    if (icmp != NULL)
-        *icmp = *hdr;
-    return (paquet_size);
+    // 3. Remplissage du reste du payload avec des données bidons (optionnel)
+    // On commence après le timestamp
+    int offset = sizeof(struct icmphdr) + sizeof(struct timeval);
+    for (int i = offset; i < 64; i++)
+    {
+        buff[i] = 'i'; // Remplissage d'octets purement fictifs
+    }
+
+    // 4. Calcul du Checksum sur la TOTALITÉ du paquet (Header + Payload complet)
+    hdr->checksum = icmp_checksum(buff, 64);
+
+    // Optionnel : si ton main a besoin d'une copie pour le debug
+    if (icmp)
+        memcpy(icmp, hdr, sizeof(struct icmphdr));
+
+    return (0);
 }

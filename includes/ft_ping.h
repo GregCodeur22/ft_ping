@@ -9,7 +9,18 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <errno.h>
 #include <netinet/ip_icmp.h>
+
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <netinet/ip.h>
 
 #define PAYLOAD_SIZE 56
 
@@ -18,41 +29,30 @@ typedef struct s_config
     char *target;
     int n;
     int w;
+    int s;
+    int W;
+    int v;
 } t_config;
-
 
 
 typedef struct s_ping
 {
-    struct sockaddr_in addr;
-    int socket_fd;
+    struct  sockaddr_in addr;
+    char    ip_str[16];
+    int     socket_fd;
+    int     sequence;
+    int     pid;
+    int     packets_transmitted;
+    int     packets_received;
+    double  rtt_min;   // Stocke le temps le plus court
+    double  rtt_max;   // Stocke le temps le plus long
+    double  rtt_total; // Stocke la somme de tous les temps
+    struct timeval start_time;
 } t_ping;
 
 t_config parse_args(int ac, char **av);
 int resolve_target(t_ping *ping, char *target);
-int convert_ip_to_sockaddr(t_ping *ping, char *ip_string);
 int build_icmp_paquet(char *buff, int seq, int pid, struct icmphdr *icmp);
-
-
-// typedef struct s_ping
-// {
-//     // config utilisateur
-//     t_config config;
-
-//     // réseau
-//     int socket_fd;
-//     struct sockaddr_in addr;
-
-//     // buffers
-//     char send_buffer[64];
-//     char recv_buffer[1024];
-
-//     // timing
-//     struct timeval time_start;
-//     struct timeval time_end;
-
-//     // stats
-//     int seq;
-//     int received;
-// } t_ping;
+void send_paquet(t_ping *ping, t_config *config);
+void recv_paquet(t_ping *ping, t_config *config);
 

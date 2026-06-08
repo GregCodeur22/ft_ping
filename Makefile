@@ -8,6 +8,8 @@ SRC := $(SRC_DIR)/main.c \
 		$(SRC_DIR)/parsing.c \
 		$(SRC_DIR)/parsing_target.c \
 		$(SRC_DIR)/build_paquet.c \
+		$(SRC_DIR)/send_paquet.c \
+		$(SRC_DIR)/recv_paquet.c
 
 
 OBJ := $(SRC:.c=.o)
