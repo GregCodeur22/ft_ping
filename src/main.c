@@ -1,12 +1,12 @@
 #include "../includes/ft_ping.h"
-#include <signal.h>
 
 int create_socket(void)
 {
     int socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (socket_fd < 0)
     {
-        fprintf(stderr, "ft_ping: socket: %s\n", strerror(errno));        return -1;
+        fprintf(stderr, "ft_ping: socket: %s\n", strerror(errno));
+        return -1;
     }
     return socket_fd;
 }
@@ -45,33 +45,37 @@ void display_stats(t_ping *ping, t_config *config)
         );
     }
 }
+volatile sig_atomic_t g_stop = 0;
+
+void sig_handler(int sig)
+{
+    (void)sig;
+    g_stop = 1;
+}
 
 int main(int ac, char **av)
 {
     t_config config = parse_args(ac, av);
     t_ping ping;
 
-    volatile sig_atomic_t g_stop = 0;
-    void sig_handler(int sig)
-    {
-        (void)sig;
-        g_stop = 1;
-    }
-
     memset(&ping, 0, sizeof(t_ping));
     ping.pid = getpid();
 
-    resolve_target(&ping, config.target);
+    if (resolve_target(&ping, config.target) != 0)
+        return (1);
     ping.socket_fd = create_socket();
     if (ping.socket_fd < 0)
         return (1);
+
+    if (config.t)
+        setsockopt(ping.socket_fd, IPPROTO_IP, IP_TTL, &config.t, sizeof(config.t));
 
     signal(SIGINT, sig_handler);
     printf("PING %s (%s) %d(%d) bytes of data.\n", 
        config.target, 
        ping.ip_str, 
        config.s, 
-       config.s + 28); // 20 (IP) + 8 (ICMP)
+       config.s + 28);
 
     gettimeofday(&ping.start_time, NULL);
 
@@ -81,18 +85,12 @@ int main(int ac, char **av)
         ping.packets_transmitted++;
         recv_paquet(&ping, &config);
         ping.sequence++;
-        sleep(1);
+        if (config.c && ping.packets_transmitted >= config.c)
+            break;
+        sleep(config.i);
     }
 
     display_stats(&ping, &config);
     close(ping.socket_fd);
-
-
-
-        //recv_paquet();
-        //verify_icmp();
-        //display_all();
-        //sleep(1);
- 
     return 0;
 }

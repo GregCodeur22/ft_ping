@@ -5,7 +5,7 @@ void send_paquet(t_ping *ping, t_config *config)
 	int paquet_size = sizeof(struct icmphdr) + config->s;
 	char buff[paquet_size];
 
-	build_icmp_paquet(buff, ping->sequence, ping->pid, NULL);
+	build_icmp_paquet(buff, ping->sequence, ping->pid, config->s, NULL);
 
 	int bytes_sent = sendto(ping->socket_fd,
 							buff,

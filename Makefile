@@ -22,6 +22,7 @@ all: $(NAME)
 
 $(NAME): $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
+	sudo setcap cap_net_raw+ep $(NAME)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
