@@ -2,7 +2,7 @@
 
 #define NO_MAX    0
 #define TTL_MAX   255
-#define SIZE_MAX  65507
+#define PACKET_SIZE_MAX  65507
 
 static int is_number(char *str)
 {
@@ -74,7 +74,7 @@ t_config parse_args(int ac, char **av)
 			else if (av[i][1] == 'q') config.q = 1;
 			else if (av[i][1] == 'c') config.c = parse_validated_int(av[i], av, &i, ac, 1,  NO_MAX);
 			else if (av[i][1] == 'i') config.i = parse_validated_int(av[i], av, &i, ac, 1,  NO_MAX);
-			else if (av[i][1] == 's') config.s = parse_validated_int(av[i], av, &i, ac, 0,  SIZE_MAX);
+			else if (av[i][1] == 's') config.s = parse_validated_int(av[i], av, &i, ac, 0,  PACKET_SIZE_MAX);
 			else if (av[i][1] == 't') config.t = parse_validated_int(av[i], av, &i, ac, 1,  TTL_MAX);
 			else if (av[i][1] == '?')
 			{
@@ -92,6 +92,7 @@ t_config parse_args(int ac, char **av)
 				printf("  ./ft_ping google.com\n");
 				printf("  ./ft_ping -c 5 -i 2 8.8.8.8\n");
 				exit(0);
+				
 			}
 			else
 			{
